@@ -42,6 +42,7 @@ export default function App() {
         audioStarted: false,
         arrayBuffer: null,
         hitOffsets: [],
+        hitEffects: [],
     });
 
     // Sync state to ref
@@ -263,6 +264,23 @@ export default function App() {
             ctx.stroke();
         }
 
+        // Draw Hit Effects
+        const nowEffect = performance.now();
+        st.hitEffects = st.hitEffects.filter(
+            (eff) => nowEffect - eff.time < 300,
+        );
+        st.hitEffects.forEach((eff) => {
+            const age = (nowEffect - eff.time) / 300;
+            const alpha = 0.6 * (1 - age);
+            ctx.beginPath();
+            ctx.arc(cx + eff.x, cy + eff.y, 50, 0, Math.PI * 2);
+            ctx.fillStyle =
+                eff.type === "good"
+                    ? `rgba(255, 255, 0, ${alpha})`
+                    : `rgba(255, 0, 0, ${alpha})`;
+            ctx.fill();
+        });
+
         // Draw Error Bar
         const barWidth = Math.min(width * 0.8, 400);
         const barHeight = 8;
@@ -344,6 +362,12 @@ export default function App() {
                 let missThreshold = st.babyMode ? 0.05 : 0.02;
                 if (realTimeDiff > missThreshold) {
                     note.missed = true;
+                    st.hitEffects.push({
+                        x: note.x,
+                        y: note.y,
+                        type: "miss",
+                        time: performance.now(),
+                    });
                     if (!st.babyMode) {
                         failGame();
                         return;
@@ -413,6 +437,15 @@ export default function App() {
                     });
                     if (st.hitOffsets.length > 30) st.hitOffsets.shift();
                     playHitSound(0);
+
+                    if (tickIsGood && !tickIsGreat) {
+                        st.hitEffects.push({
+                            x: targetNote.x,
+                            y: targetNote.y,
+                            type: "good",
+                            time: performance.now(),
+                        });
+                    }
                 }
                 return;
             }
@@ -432,6 +465,15 @@ export default function App() {
                 st.combo++;
                 setCombo(st.combo);
                 playHitSound(targetNote.hitSound);
+
+                if (isGood && !isGreat) {
+                    st.hitEffects.push({
+                        x: targetNote.x,
+                        y: targetNote.y,
+                        type: "good",
+                        time: performance.now(),
+                    });
+                }
             } else if (currentTime > targetNote.time - 0.15 * st.playbackRate) {
                 // Don't fail for hitting early on the first note
                 if (st.noteIndex === 0 && diff < 0) {
@@ -440,6 +482,13 @@ export default function App() {
                 }
 
                 targetNote.missed = true;
+                st.hitEffects.push({
+                    x: targetNote.x,
+                    y: targetNote.y,
+                    type: "miss",
+                    time: performance.now(),
+                });
+
                 if (!st.babyMode) {
                     failGame();
                 } else {
@@ -472,6 +521,7 @@ export default function App() {
         st.combo = 0;
         st.noteIndex = 0;
         st.hitOffsets = [];
+        st.hitEffects = [];
         st.firstBeat = 0;
 
         const fetchData = async () => {
