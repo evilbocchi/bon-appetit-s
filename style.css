@@ -1,0 +1,123 @@
+:root {
+  color-scheme: dark;
+  font-family: Arial, sans-serif;
+}
+
+body {
+  margin: 0;
+  background: #0d1117;
+  color: #e6edf3;
+}
+
+main {
+  max-width: 920px;
+  margin: 0 auto;
+  padding: 16px;
+}
+
+h1,
+h2 {
+  margin: 0 0 12px;
+}
+
+.panel {
+  background: #161b22;
+  border: 1px solid #30363d;
+  border-radius: 8px;
+  padding: 12px;
+  margin-bottom: 12px;
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.keybind {
+  min-width: 64px;
+  height: 36px;
+  border-radius: 6px;
+  border: 1px solid #8b949e;
+  background: #21262d;
+  color: #e6edf3;
+  cursor: pointer;
+}
+
+.keybind.arming {
+  border-color: #58a6ff;
+  box-shadow: 0 0 0 2px #58a6ff55;
+}
+
+#start {
+  height: 36px;
+  border-radius: 6px;
+  border: 0;
+  background: #238636;
+  color: #fff;
+  padding: 0 16px;
+  cursor: pointer;
+}
+
+#playfield {
+  position: relative;
+  width: min(90vw, 580px);
+  aspect-ratio: 1;
+  margin: 0 auto;
+  background: radial-gradient(circle at center, #1b2a3a 0%, #0d1117 70%);
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.hit,
+.approach {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+}
+
+.hit {
+  width: 92px;
+  height: 92px;
+  border: 4px solid #f0f6fc;
+  box-shadow: inset 0 0 0 4px #58a6ff;
+}
+
+.approach {
+  width: 220px;
+  height: 220px;
+  border: 4px solid #ffa657;
+  animation: approachShrink linear forwards;
+}
+
+@keyframes approachShrink {
+  from {
+    width: 220px;
+    height: 220px;
+    opacity: 0.95;
+  }
+  to {
+    width: 92px;
+    height: 92px;
+    opacity: 1;
+  }
+}
+
+.hud {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+.hidden {
+  display: none;
+}
+
+.meta,
+.footnote {
+  color: #8b949e;
+  font-size: 0.92rem;
+}

@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Bon Appétit S Stream Challenge</title>
+    <link rel="stylesheet" href="/style.css" />
+  </head>
+  <body>
+    <main>
+      <h1>Bon Appétit S Stream Challenge</h1>
+      <section class="panel" id="setup-panel">
+        <h2>Setup</h2>
+        <p>
+          Default keyboard keys are <strong>Z</strong> and <strong>X</strong>. Click a key field, then press any key.
+        </p>
+        <div class="row">
+          <label for="key1">Key 1</label>
+          <button id="key1" class="keybind" type="button">Z</button>
+          <label for="key2">Key 2</label>
+          <button id="key2" class="keybind" type="button">X</button>
+        </div>
+        <div class="row">
+          <label for="bpm">BPM</label>
+          <select id="bpm"></select>
+        </div>
+        <p class="meta">
+          Timing base: first stream section is calibrated from ~10s at 170 BPM and scales with your BPM setting.
+        </p>
+        <p class="meta">Input pairing: Key 1 clashes with left click, Key 2 clashes with right click.</p>
+        <button id="start" type="button">Start Challenge</button>
+      </section>
+
+      <section class="panel hidden" id="game-panel">
+        <div class="hud">
+          <span id="status">Ready</span>
+          <span id="next-timing"></span>
+        </div>
+        <div id="playfield" aria-label="playfield">
+          <div id="approach-circle" class="approach hidden"></div>
+          <div id="hit-circle" class="hit hidden"></div>
+        </div>
+      </section>
+
+      <audio id="song" preload="auto" src="/assets/bon-appetit-s-oldskool-happyhardcore-remix.wav"></audio>
+
+      <p class="footnote">
+        The included audio file is a local placeholder. Replace
+        <code>/assets/bon-appetit-s-oldskool-happyhardcore-remix.wav</code> with your properly licensed track file.
+      </p>
+    </main>
+
+    <script src="/script.js"></script>
+  </body>
+</html>
