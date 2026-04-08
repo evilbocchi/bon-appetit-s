@@ -1,44 +1,12 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>bon appétit S - osu! stream challenge</title>
-  <link rel="stylesheet" href="./styles.css" />
-</head>
-<body>
-  <main class="app">
-    <section class="panel" id="setupPanel">
-      <h1>bon appétit S stream challenge</h1>
-      <p class="timing">First stream: <strong>00:10.043</strong> • Last beat: <strong>06:08.292</strong> (base 170 BPM)</p>
-
-      <div class="controls">
-        <label for="bpm">BPM (160–360):</label>
-        <select id="bpm"></select>
-      </div>
-
-      <div class="controls keybinds">
-        <button id="setK1" type="button">K1: Z</button>
-        <button id="setK2" type="button">K2: X</button>
-      </div>
-
-      <p id="bindingHint" class="hint">Click a key button, then press any keyboard key.</p>
-      <button id="startBtn" type="button" class="start">Start challenge</button>
-    </section>
-
-    <section class="hud" id="hud" hidden>
-      <div id="status">Ready</div>
-      <div id="meta"></div>
-    </section>
-
-    <section class="playfield" id="playfield" hidden>
-      <div class="hit-center"></div>
-      <div id="approachLayer"></div>
-    </section>
-
-    <audio id="song" src="./song.mp3" preload="auto"></audio>
-  </main>
-
-  <script src="./script.js"></script>
-</body>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Bon Appetit S - Stream Challenge</title>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.jsx"></script>
+  </body>
 </html>
