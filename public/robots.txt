@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://bon-appetit-s.egakareta.com/sitemap.xml

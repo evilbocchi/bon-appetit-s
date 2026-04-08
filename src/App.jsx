@@ -641,7 +641,8 @@ export default function App() {
     }, []);
 
     return (
-        <>
+        <main id="game-container">
+            <h1 className="visually-hidden">Bon Appetit S - Rhythm Stream Trainer</h1>
             {gameState === "playing" && (
                 <>
                     <div id="hud">
@@ -782,7 +783,9 @@ export default function App() {
                 ref={canvasRef}
                 width={windowSize.width}
                 height={windowSize.height}
+                role="img"
+                aria-label="Rhythm game animation canvas"
             ></canvas>
-        </>
+        </main>
     );
 }

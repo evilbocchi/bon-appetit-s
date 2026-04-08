@@ -1,0 +1,16 @@
+{
+  "name": "Bon Appetit S - Rhythm Stream Trainer",
+  "short_name": "Bon Appetit S",
+  "description": "A rhythm game stream trainer for osu! players.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#000000",
+  "theme_color": "#ff66aa",
+  "icons": [
+    {
+      "src": "/bg.jpg",
+      "sizes": "512x512",
+      "type": "image/jpeg"
+    }
+  ]
+}
