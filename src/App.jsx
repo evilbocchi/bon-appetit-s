@@ -5,6 +5,7 @@ import "./App.css";
 const BASE_BPM = 170;
 
 import { parseOsuFile } from "./osuParser";
+import processorUrl from "./audio-processor.js?url";
 
 export default function App() {
     const [gameState, setGameState] = useState("playing"); // menu, playing, gameover, win
@@ -33,7 +34,8 @@ export default function App() {
         babyMode: false,
         approachTime: 1.2,
         audioCtx: null,
-        source: null,
+        workletNode: null,
+        sharedState: null, // Float32Array on SharedArrayBuffer
         startTime: 0,
         animationId: null,
         initialTime: 0,
@@ -49,8 +51,8 @@ export default function App() {
         st.key2 = key2;
         st.targetBPM = targetBPM;
         st.playbackRate = targetBPM / BASE_BPM;
-        if (st.source) {
-            st.source.playbackRate.value = st.playbackRate;
+        if (st.sharedState) {
+            st.sharedState[1] = st.playbackRate;
         }
     }, [key1, key2, targetBPM]);
 
@@ -81,8 +83,8 @@ export default function App() {
         const st = stateRef.current;
         st.gameState = "gameover";
         setGameState("gameover");
-        if (st.source) {
-            st.source.stop();
+        if (st.sharedState) {
+            st.sharedState[2] = 0; // Stop
         }
     }, []);
 
@@ -120,10 +122,11 @@ export default function App() {
 
     const getCurrentAudioTime = useCallback(() => {
         const st = stateRef.current;
-        if (!st.audioCtx) {
+        if (!st.sharedState) {
             return 0;
         }
-        return (st.audioCtx.currentTime - st.startTime) * st.playbackRate;
+        // index / sampleRate = time in seconds
+        return st.sharedState[0] / st.sharedState[3];
     }, []);
 
     const initAudio = useCallback(async () => {
@@ -131,17 +134,60 @@ export default function App() {
         if (st.audioStarted || !st.arrayBuffer) return;
         st.audioStarted = true;
 
-        const audioCtx = new (
-            window.AudioContext || window.webkitAudioContext
-        )();
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)(
+            { latencyHint: "interactive" },
+        );
         st.audioCtx = audioCtx;
+
+        if (typeof SharedArrayBuffer === "undefined") {
+            console.error(
+                "SharedArrayBuffer is not supported. Check COOP/COEP headers.",
+            );
+            st.audioStarted = false;
+            return;
+        }
 
         try {
             const audioBuffer = await audioCtx.decodeAudioData(st.arrayBuffer);
-            st.source = audioCtx.createBufferSource();
-            st.source.buffer = audioBuffer;
-            st.source.playbackRate.value = st.playbackRate;
-            st.source.connect(audioCtx.destination);
+
+            // Prepare SharedArrayBuffers for main track
+            const left = audioBuffer.getChannelData(0);
+            const sabLeft = new SharedArrayBuffer(left.byteLength);
+            const sharedLeft = new Float32Array(sabLeft);
+            sharedLeft.set(left);
+
+            let sharedRight = null;
+            if (audioBuffer.numberOfChannels > 1) {
+                const right = audioBuffer.getChannelData(1);
+                const sabRight = new SharedArrayBuffer(right.byteLength);
+                sharedRight = new Float32Array(sabRight);
+                sharedRight.set(right);
+            }
+
+            const sabState = new SharedArrayBuffer(4 * 4);
+            const sharedState = new Float32Array(sabState);
+            sharedState[0] = 0; // index
+            sharedState[1] = st.playbackRate;
+            sharedState[2] = 1; // isPlaying
+            sharedState[3] = audioCtx.sampleRate;
+            st.sharedState = sharedState;
+
+            await audioCtx.audioWorklet.addModule(processorUrl);
+            const workletNode = new AudioWorkletNode(
+                audioCtx,
+                "audio-processor",
+                {
+                    outputChannelCount: [audioBuffer.numberOfChannels],
+                },
+            );
+            workletNode.port.postMessage({
+                type: "init",
+                left: sharedLeft,
+                right: sharedRight,
+                state: sharedState,
+            });
+            workletNode.connect(audioCtx.destination);
+            st.workletNode = workletNode;
 
             st.decodedHitSounds = {};
             if (st.hitSounds) {
@@ -157,7 +203,6 @@ export default function App() {
             }
 
             st.startTime = audioCtx.currentTime;
-            st.source.start(0);
         } catch (e) {
             console.error("Audio init failed", e);
             st.audioStarted = false;
@@ -578,7 +623,7 @@ export default function App() {
         return () => {
             const st = stateRef.current;
             if (st.animationId) cancelAnimationFrame(st.animationId);
-            if (st.source) st.source.stop();
+            if (st.workletNode) st.workletNode.disconnect();
             if (st.audioCtx) st.audioCtx.close();
         };
     }, []);
