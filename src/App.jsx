@@ -469,6 +469,20 @@ export default function App() {
     useEffect(() => {
         const handleKeyDown = (e) => {
             const st = stateRef.current;
+
+            // Prevent browser shortcuts (Ctrl+S, Ctrl+P, Ctrl+F, etc.)
+            if (e.ctrlKey || e.metaKey) {
+                const k = e.key.toLowerCase();
+                if (["s", "p", "f", "g", "u", "r"].includes(k)) {
+                    e.preventDefault();
+                }
+            }
+
+            // Prevent Tab from moving focus
+            if (e.key === "Tab") {
+                e.preventDefault();
+            }
+
             if (!st.audioStarted) initAudio();
 
             if (
