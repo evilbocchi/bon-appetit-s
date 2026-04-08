@@ -63,7 +63,10 @@ h2 {
     margin-top: 0 !important;
     border-radius: 4px !important;
     min-width: 45px;
-    transition: transform 0.1s, border-color 0.2s, box-shadow 0.2s;
+    transition:
+        transform 0.1s,
+        border-color 0.2s,
+        box-shadow 0.2s;
     border: 2px solid transparent;
     cursor: pointer;
 }

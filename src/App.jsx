@@ -175,7 +175,8 @@ export default function App() {
 
         const st = stateRef.current;
         let currentTime = getCurrentAudioTime();
-        let approachTimeAudio = st.approachTime * st.playbackRate;
+        // Scale approach rate with BPM
+        let approachTimeAudio = st.approachTime;
 
         let visibleNotes = [];
         for (let i = st.noteIndex; i < st.notes.length; i++) {
@@ -392,7 +393,7 @@ export default function App() {
                     playHitSound(0);
                     return;
                 }
-                
+
                 targetNote.missed = true;
                 if (!st.babyMode) {
                     failGame();
@@ -598,39 +599,54 @@ export default function App() {
                                 <div className="setting">
                                     <label>BPM: </label>
                                     <div className="bpm-buttons">
-                                        {Array.from({ length: 21 }, (_, i) => 160 + i * 10).map(bpm => {
+                                        {Array.from(
+                                            { length: 21 },
+                                            (_, i) => 160 + i * 10,
+                                        ).map((bpm) => {
                                             let style = {};
                                             if (bpm >= 300) {
-                                                const ratio = (bpm - 300) / (360 - 300);
-                                                const green = Math.floor(255 * (1 - ratio));
-                                                const blue = Math.floor(255 * ratio);
+                                                const ratio =
+                                                    (bpm - 300) / (360 - 300);
+                                                const green = Math.floor(
+                                                    255 * (1 - ratio),
+                                                );
+                                                const blue = Math.floor(
+                                                    255 * ratio,
+                                                );
                                                 const glowColor = `rgb(255, ${green}, ${blue})`;
                                                 style = {
                                                     background: "black",
                                                     color: "white",
                                                     border: `2px solid ${glowColor}`,
-                                                    boxShadow: `inset 0 0 10px ${glowColor}`
+                                                    boxShadow: `inset 0 0 10px ${glowColor}`,
                                                 };
                                             } else if (bpm >= 240) {
-                                                const darkness = (bpm - 240) / (300 - 240); 
+                                                const darkness =
+                                                    (bpm - 240) / (300 - 240);
                                                 style = {
                                                     background: `rgb(${Math.floor(255 * (1 - darkness))}, 0, 0)`,
-                                                    color: "white"
+                                                    color: "white",
                                                 };
                                             } else {
-                                                const hue = 240 - ((bpm - 160) / (240 - 160)) * 240;
+                                                const hue =
+                                                    240 -
+                                                    ((bpm - 160) /
+                                                        (240 - 160)) *
+                                                        240;
                                                 style = {
                                                     background: `hsl(${hue}, 80%, 50%)`,
-                                                    color: "white"
+                                                    color: "white",
                                                 };
                                             }
 
                                             return (
                                                 <button
                                                     key={bpm}
-                                                    className={`bpm-btn ${targetBPM === bpm ? 'active' : ''}`}
+                                                    className={`bpm-btn ${targetBPM === bpm ? "active" : ""}`}
                                                     style={style}
-                                                    onClick={() => setTargetBPM(bpm)}
+                                                    onClick={() =>
+                                                        setTargetBPM(bpm)
+                                                    }
                                                 >
                                                     {bpm}
                                                 </button>
