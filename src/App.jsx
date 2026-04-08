@@ -538,6 +538,17 @@ export default function App() {
                 let k = e.key.toLowerCase();
                 if (k === " ") k = "space";
 
+                // Skip logic
+                if (k === "space" && st.sharedState) {
+                    const currentTime = getCurrentAudioTime();
+                    const skipTarget = st.firstBeat - 1.5 * st.playbackRate;
+                    if (currentTime < skipTarget - 0.1) {
+                        st.sharedState[0] = skipTarget * st.sharedState[3];
+                        e.preventDefault();
+                        return;
+                    }
+                }
+
                 // Ignore modifier and UI keys
                 if (
                     [
@@ -647,10 +658,18 @@ export default function App() {
                     {countdown > 0 && (
                         <div id="countdown">
                             <div id="cd-time">Starts in: {countdown}s</div>
-                            <div className="instructions">
+                            <div
+                                className={`instructions ${parseFloat(countdown) <= 1.5 ? "fade-out" : ""}`}
+                            >
+                                {countdown > 2 && (
+                                    <p className="skip-hint">
+                                        Press SPACE to skip
+                                    </p>
+                                )}
                                 <p>
-                                    How to play: Tap consistently at {targetBPM}{" "}
-                                    bpm for {totalNotes} notes.
+                                    How to play: Tap consistently at{" "}
+                                    <b>{targetBPM}</b> bpm for{" "}
+                                    <b>{totalNotes}</b> notes.
                                 </p>
                                 <p>
                                     No aim is required, the hit objects are
@@ -661,7 +680,9 @@ export default function App() {
                                     continuous deathstream.
                                 </p>
                             </div>
-                            <div className="settings-overlay">
+                            <div
+                                className={`settings-overlay ${parseFloat(countdown) <= 1.5 ? "fade-out" : ""}`}
+                            >
                                 <div className="setting">
                                     <label>Keys: </label>
                                     <input
