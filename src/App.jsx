@@ -16,6 +16,7 @@ export default function App() {
 
     const [combo, setCombo] = useState(0);
     const [countdown, setCountdown] = useState(0);
+    const [totalNotes, setTotalNotes] = useState(0);
     const [loading, setLoading] = useState(false);
 
     const canvasRef = useRef(null);
@@ -484,6 +485,7 @@ export default function App() {
                 st.notes = notes;
                 st.beatDuration = beatDuration;
                 if (notes.length > 0) st.firstBeat = notes[0].time;
+                setTotalNotes(notes.length);
 
                 const response = await fetch("/audio.mp3");
                 if (!response.ok) throw new Error("Audio file not found");
@@ -646,6 +648,18 @@ export default function App() {
                     {countdown > 0 && (
                         <div id="countdown">
                             <div id="cd-time">Starts in: {countdown}s</div>
+                            <p>
+                                How to play: Tap consistently at {targetBPM} bpm
+                                for {totalNotes} notes.
+                            </p>
+                            <p>
+                                No aim is required, the hit objects are purely
+                                for visual effect.
+                            </p>
+                            <p>
+                                There is no pattern. It is just one continuous
+                                deathstream.
+                            </p>
                             <div className="settings-overlay">
                                 <div className="setting">
                                     <label>Keys: </label>
@@ -713,7 +727,12 @@ export default function App() {
                                         })}
                                     </div>
                                 </div>
-                                <p className="hint">Click/Tap to start audio</p>
+                                <p className="hint">
+                                    A stamina challenge by{" "}
+                                    <a href="https://osu.ppy.sh/users/13510304">
+                                        ohtsuki
+                                    </a>
+                                </p>
                             </div>
                         </div>
                     )}
