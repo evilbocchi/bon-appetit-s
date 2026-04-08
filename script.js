@@ -43,6 +43,11 @@ function updateKeyButtons() {
   setK2Btn.textContent = `K2: ${readableKey(keybinds.k2)}`;
 }
 
+function getSongMs() {
+  if (!game) return 0;
+  return (song.currentTime * 1000) / game.rate;
+}
+
 function beginBinding(slot) {
   waitingForBinding = slot;
   bindingHint.textContent = `Press a key for ${slot.toUpperCase()}...`;
@@ -185,10 +190,10 @@ function handleInputPress(source) {
 
 function renderNotes(songMs) {
   approachLayer.innerHTML = '';
-  const first = Math.max(0, Math.floor((songMs - game.streamStartMs - HIT_WINDOW_MS) / game.intervalMs));
+  const firstVisibleNoteIndex = Math.max(0, Math.floor((songMs - game.streamStartMs - HIT_WINDOW_MS) / game.intervalMs));
   const visibleCount = Math.ceil(PREEMPT_MS / game.intervalMs) + 3;
 
-  for (let i = first; i < first + visibleCount && i < game.totalNotes; i += 1) {
+  for (let i = firstVisibleNoteIndex; i < firstVisibleNoteIndex + visibleCount && i < game.totalNotes; i += 1) {
     if (i < game.nextNote) continue;
 
     const noteTime = game.streamStartMs + i * game.intervalMs;
@@ -229,8 +234,3 @@ function tick() {
 
 startBtn.addEventListener('click', startGame);
 updateKeyButtons();
-
-function getSongMs() {
-  if (!game) return 0;
-  return (song.currentTime * 1000) / game.rate;
-}
