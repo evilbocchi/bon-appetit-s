@@ -256,7 +256,7 @@ export default function App() {
 
             ctx.beginPath();
             ctx.arc(nx, ny, 50, 0, Math.PI * 2);
-            ctx.fillStyle = `rgba(0, 150, 255, ${alpha})`;
+            ctx.fillStyle = `rgba(0, 0, 0, ${alpha})`;
             ctx.fill();
             ctx.strokeStyle = `rgba(255, 255, 255, ${alpha})`;
             ctx.lineWidth = 4;
