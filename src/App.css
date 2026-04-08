@@ -1,3 +1,7 @@
+* {
+    box-sizing: border-box;
+}
+
 body {
     margin: 0;
     overflow: hidden;
@@ -146,6 +150,11 @@ canvas {
     pointer-events: none;
 }
 
+.instructions {
+    text-align: center;
+    max-width: 80%;
+}
+
 .baby-mode-btn {
     pointer-events: auto;
     font-size: 16px !important;
@@ -215,4 +224,67 @@ canvas {
     font-size: 24px;
     margin-top: 20px;
     color: white;
+}
+
+/* Mobile Responsiveness */
+@media (max-width: 768px) {
+    #hud {
+        font-size: 20px;
+        top: 10px;
+        left: 10px;
+        right: 10px;
+    }
+
+    #cd-time {
+        font-size: 40px;
+        margin-bottom: 10px;
+    }
+
+    .instructions {
+        max-width: 95%;
+    }
+
+    .instructions p {
+        font-size: 13px;
+        line-height: 1.2;
+        margin: 4px 0;
+    }
+
+    .settings-overlay {
+        width: 100%;
+    }
+
+    .setting {
+        font-size: 16px;
+        margin: 5px 0;
+    }
+
+    .setting input {
+        font-size: 16px;
+        width: 70px;
+        padding: 4px;
+    }
+
+    .bpm-buttons {
+        gap: 6px;
+        margin-top: 10px;
+        padding: 0 5px;
+    }
+
+    .bpm-btn {
+        font-size: 12px !important;
+        padding: 8px 4px !important;
+        min-width: 40px;
+    }
+
+    .hint {
+        font-size: 11px;
+        margin-top: 8px;
+    }
+}
+
+@media (max-height: 600px) {
+    .instructions {
+        display: none;
+    }
 }

@@ -12,12 +12,11 @@ export default function App() {
     const [key1, setKey1] = useState("z");
     const [key2, setKey2] = useState("x");
     const [targetBPM, setTargetBPM] = useState(170);
-    const [babyMode, setBabyMode] = useState(false);
+    const [babyMode, setBabyMode] = useState(true);
 
     const [combo, setCombo] = useState(0);
     const [countdown, setCountdown] = useState(0);
     const [totalNotes, setTotalNotes] = useState(0);
-    const [loading, setLoading] = useState(false);
 
     const canvasRef = useRef(null);
     const stateRef = useRef({
@@ -265,7 +264,7 @@ export default function App() {
         }
 
         // Draw Error Bar
-        const barWidth = 400;
+        const barWidth = Math.min(width * 0.8, 400);
         const barHeight = 8;
         const bx = width / 2 - barWidth / 2;
         const by = height - 60;
@@ -648,18 +647,20 @@ export default function App() {
                     {countdown > 0 && (
                         <div id="countdown">
                             <div id="cd-time">Starts in: {countdown}s</div>
-                            <p>
-                                How to play: Tap consistently at {targetBPM} bpm
-                                for {totalNotes} notes.
-                            </p>
-                            <p>
-                                No aim is required, the hit objects are purely
-                                for visual effect.
-                            </p>
-                            <p>
-                                There is no pattern. It is just one continuous
-                                deathstream.
-                            </p>
+                            <div className="instructions">
+                                <p>
+                                    How to play: Tap consistently at {targetBPM}{" "}
+                                    bpm for {totalNotes} notes.
+                                </p>
+                                <p>
+                                    No aim is required, the hit objects are
+                                    purely for visual effect.
+                                </p>
+                                <p>
+                                    There is no pattern. It is just one
+                                    continuous deathstream.
+                                </p>
+                            </div>
                             <div className="settings-overlay">
                                 <div className="setting">
                                     <label>Keys: </label>
