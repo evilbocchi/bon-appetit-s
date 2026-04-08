@@ -11,6 +11,7 @@ export default function App() {
     const [key1, setKey1] = useState("z");
     const [key2, setKey2] = useState("x");
     const [targetBPM, setTargetBPM] = useState(170);
+    const [babyMode, setBabyMode] = useState(false);
 
     const [combo, setCombo] = useState(0);
     const [countdown, setCountdown] = useState(0);
@@ -29,6 +30,7 @@ export default function App() {
         notes: [],
         noteIndex: 0,
         combo: 0,
+        babyMode: false,
         approachTime: 1.2,
         audioCtx: null,
         source: null,
@@ -55,6 +57,10 @@ export default function App() {
     useEffect(() => {
         stateRef.current.gameState = gameState;
     }, [gameState]);
+
+    useEffect(() => {
+        stateRef.current.babyMode = babyMode;
+    }, [babyMode]);
 
     // Handle Resize
     const [windowSize, setWindowSize] = useState({
@@ -222,8 +228,16 @@ export default function App() {
         ctx.fillRect(bx, by, barWidth, barHeight);
 
         // Timing Windows (Visual Guides)
-        // 20ms Great window
         const maxOffset = 0.15; // 150ms scale
+
+        // 50ms Good window (only in baby mode)
+        if (st.babyMode) {
+            const goodWidth = (0.05 / maxOffset) * (barWidth / 2) * 2;
+            ctx.fillStyle = "rgba(255, 255, 0, 0.15)";
+            ctx.fillRect(width / 2 - goodWidth / 2, by, goodWidth, barHeight);
+        }
+
+        // 20ms Great window
         const greatWidth = (0.02 / maxOffset) * (barWidth / 2) * 2;
         ctx.fillStyle = "rgba(0, 255, 0, 0.2)";
         ctx.fillRect(width / 2 - greatWidth / 2, by, greatWidth, barHeight);
@@ -247,9 +261,13 @@ export default function App() {
             const mx = width / 2 + xOffset;
 
             if (mx >= bx && mx <= bx + barWidth) {
-                ctx.fillStyle = h.hit
-                    ? `rgba(0, 255, 255, ${alpha})`
-                    : `rgba(255, 50, 50, ${alpha})`;
+                if (h.hit) {
+                    ctx.fillStyle = `rgba(0, 255, 255, ${alpha})`;
+                } else if (h.isGood) {
+                    ctx.fillStyle = `rgba(255, 255, 0, ${alpha})`;
+                } else {
+                    ctx.fillStyle = `rgba(255, 50, 50, ${alpha})`;
+                }
                 ctx.fillRect(mx - 2, by - 4, 4, barHeight + 8);
             }
         });
@@ -277,10 +295,16 @@ export default function App() {
             let note = st.notes[i];
             if (!note.hit && !note.missed) {
                 let realTimeDiff = (currentTime - note.time) / st.playbackRate;
-                if (realTimeDiff > 0.02) {
+                let missThreshold = st.babyMode ? 0.05 : 0.02;
+                if (realTimeDiff > missThreshold) {
                     note.missed = true;
-                    failGame();
-                    return;
+                    if (!st.babyMode) {
+                        failGame();
+                        return;
+                    } else {
+                        // In baby mode, just move to next note
+                        st.noteIndex = i + 1;
+                    }
                 } else {
                     break;
                 }
@@ -316,23 +340,65 @@ export default function App() {
             let diff = currentTime - targetNote.time;
             let realTimeDiff = Math.abs(diff) / st.playbackRate;
 
+            const isGreat = realTimeDiff <= 0.02;
+            const isGood = st.babyMode && realTimeDiff <= 0.05;
+
+            if (
+                st.noteIndex === 0 &&
+                currentTime < targetNote.time - 0.15 * st.playbackRate
+            ) {
+                if (st.beatDuration) {
+                    let streamInterval = st.beatDuration / 4 / 1000;
+                    let k = Math.round(
+                        (targetNote.time - currentTime) / streamInterval,
+                    );
+                    let nearestTick = targetNote.time - k * streamInterval;
+                    let tickDiff = currentTime - nearestTick;
+                    let realTickDiff = Math.abs(tickDiff) / st.playbackRate;
+
+                    const tickIsGreat = realTickDiff <= 0.02;
+                    const tickIsGood = st.babyMode && realTickDiff <= 0.05;
+
+                    st.hitOffsets.push({
+                        offset: tickDiff,
+                        time: performance.now(),
+                        hit: tickIsGreat,
+                        isGood: tickIsGood && !tickIsGreat,
+                    });
+                    if (st.hitOffsets.length > 30) st.hitOffsets.shift();
+                    playHitSound(0);
+                }
+                return;
+            }
+
             // Record hit offset for the error bar
             st.hitOffsets.push({
                 offset: diff,
                 time: performance.now(),
-                hit: realTimeDiff <= 0.02,
+                hit: isGreat,
+                isGood: isGood && !isGreat,
             });
             if (st.hitOffsets.length > 30) st.hitOffsets.shift();
 
-            if (realTimeDiff <= 0.02) {
+            if (isGreat || isGood) {
                 targetNote.hit = true;
                 st.noteIndex = targetIndex + 1;
                 st.combo++;
                 setCombo(st.combo);
                 playHitSound(targetNote.hitSound);
             } else if (currentTime > targetNote.time - 0.15 * st.playbackRate) {
+                // Don't fail for hitting early on the first note
+                if (st.noteIndex === 0 && diff < 0) {
+                    playHitSound(0);
+                    return;
+                }
+                
                 targetNote.missed = true;
-                failGame();
+                if (!st.babyMode) {
+                    failGame();
+                } else {
+                    st.noteIndex = targetIndex + 1;
+                }
             }
         }
     }, [getCurrentAudioTime, failGame, playHitSound]);
@@ -368,8 +434,9 @@ export default function App() {
                     "/K A Z M A S A - Bon Appetit S (Oldskool HappyHardcore Remix) (BarkingMadDog) [Blend S].osu",
                 );
                 const osuText = await osuRes.text();
-                const { notes } = await parseOsuFile(osuText);
+                const { notes, beatDuration } = await parseOsuFile(osuText);
                 st.notes = notes;
+                st.beatDuration = beatDuration;
                 if (notes.length > 0) st.firstBeat = notes[0].time;
 
                 const response = await fetch("/audio.mp3");
@@ -407,8 +474,6 @@ export default function App() {
                 st.gameState === "playing" &&
                 getCurrentAudioTime() < st.firstBeat
             ) {
-                if (document.activeElement.id === "bpm-input") return;
-
                 let k = e.key.toLowerCase();
                 if (k === " ") k = "space";
 
@@ -511,6 +576,12 @@ export default function App() {
                         <div>
                             Combo: <span id="combo">{combo}</span>
                         </div>
+                        <button
+                            className="baby-mode-btn"
+                            onClick={() => setBabyMode(!babyMode)}
+                        >
+                            Baby Mode: {babyMode ? "ON" : "OFF"}
+                        </button>
                     </div>
                     {countdown > 0 && (
                         <div id="countdown">
@@ -526,24 +597,48 @@ export default function App() {
                                 </div>
                                 <div className="setting">
                                     <label>BPM: </label>
-                                    <input
-                                        type="number"
-                                        id="bpm-input"
-                                        value={targetBPM}
-                                        min="160"
-                                        max="360"
-                                        step="10"
-                                        onChange={(e) =>
-                                            setTargetBPM(
-                                                parseInt(e.target.value) || 170,
-                                            )
-                                        }
-                                    />
+                                    <div className="bpm-buttons">
+                                        {Array.from({ length: 21 }, (_, i) => 160 + i * 10).map(bpm => {
+                                            let style = {};
+                                            if (bpm >= 300) {
+                                                const ratio = (bpm - 300) / (360 - 300);
+                                                const green = Math.floor(255 * (1 - ratio));
+                                                const blue = Math.floor(255 * ratio);
+                                                const glowColor = `rgb(255, ${green}, ${blue})`;
+                                                style = {
+                                                    background: "black",
+                                                    color: "white",
+                                                    border: `2px solid ${glowColor}`,
+                                                    boxShadow: `inset 0 0 10px ${glowColor}`
+                                                };
+                                            } else if (bpm >= 240) {
+                                                const darkness = (bpm - 240) / (300 - 240); 
+                                                style = {
+                                                    background: `rgb(${Math.floor(255 * (1 - darkness))}, 0, 0)`,
+                                                    color: "white"
+                                                };
+                                            } else {
+                                                const hue = 240 - ((bpm - 160) / (240 - 160)) * 240;
+                                                style = {
+                                                    background: `hsl(${hue}, 80%, 50%)`,
+                                                    color: "white"
+                                                };
+                                            }
+
+                                            return (
+                                                <button
+                                                    key={bpm}
+                                                    className={`bpm-btn ${targetBPM === bpm ? 'active' : ''}`}
+                                                    style={style}
+                                                    onClick={() => setTargetBPM(bpm)}
+                                                >
+                                                    {bpm}
+                                                </button>
+                                            );
+                                        })}
+                                    </div>
                                 </div>
-                                <p className="hint">
-                                    Tap any keys to rebind. Click/Tap to start
-                                    audio.
-                                </p>
+                                <p className="hint">Click/Tap to start audio</p>
                             </div>
                         </div>
                     )}

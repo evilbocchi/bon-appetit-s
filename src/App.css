@@ -1,7 +1,9 @@
 body {
     margin: 0;
     overflow: hidden;
-    background: url("/bg.jpg") no-repeat center center fixed;
+    background:
+        linear-gradient(rgba(0, 0, 0, 0.8), rgba(0, 0, 0, 0.8)),
+        url("/bg.jpg") no-repeat center center fixed;
     background-size: cover;
     color: white;
     font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
@@ -24,7 +26,6 @@ body {
     align-items: center;
     justify-content: center;
     z-index: 100;
-    background: rgba(0, 0, 0, 0.6);
 }
 
 h1 {
@@ -42,6 +43,40 @@ h2 {
 .setting {
     margin: 10px 0;
     font-size: 24px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.bpm-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    justify-content: center;
+    max-width: 500px;
+    margin-top: 15px;
+}
+
+.bpm-btn {
+    font-size: 14px !important;
+    padding: 6px 10px !important;
+    margin-top: 0 !important;
+    border-radius: 4px !important;
+    min-width: 45px;
+    transition: transform 0.1s, border-color 0.2s, box-shadow 0.2s;
+    border: 2px solid transparent;
+    cursor: pointer;
+}
+
+.bpm-btn:hover {
+    transform: scale(1.1);
+}
+
+.bpm-btn.active {
+    border-color: white !important;
+    box-shadow: 0 0 8px rgba(255, 255, 255, 0.8);
+    font-weight: bold;
+    z-index: 2;
 }
 
 .setting input {
@@ -98,10 +133,32 @@ canvas {
     position: absolute;
     top: 20px;
     left: 20px;
+    right: 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
     z-index: 100;
     font-size: 32px;
     text-shadow: 2px 2px 0 #000;
     pointer-events: none;
+}
+
+.baby-mode-btn {
+    pointer-events: auto;
+    font-size: 16px !important;
+    padding: 8px 16px !important;
+    margin-top: 0 !important;
+    background: rgba(255, 255, 255, 0.2) !important;
+    border: 1px solid rgba(255, 255, 255, 0.4) !important;
+    color: white !important;
+    cursor: pointer;
+    border-radius: 4px;
+    transition: background 0.2s;
+    text-shadow: none;
+}
+
+.baby-mode-btn:hover {
+    background: rgba(255, 255, 255, 0.4) !important;
 }
 
 #countdown {
@@ -115,7 +172,6 @@ canvas {
     align-items: center;
     justify-content: center;
     z-index: 50;
-    background: rgba(0, 0, 0, 0.4);
     pointer-events: auto;
 }
 
@@ -131,10 +187,6 @@ canvas {
     display: flex;
     flex-direction: column;
     align-items: center;
-    background: rgba(0, 0, 0, 0.6);
-    padding: 20px;
-    border-radius: 15px;
-    border: 1px solid #444;
 }
 
 #gameover {
@@ -148,7 +200,6 @@ canvas {
     align-items: center;
     justify-content: center;
     z-index: 50;
-    background: rgba(0, 0, 0, 0.5);
 }
 
 #go-msg {
