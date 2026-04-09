@@ -68,11 +68,15 @@ export async function parseOsuFile(text) {
 
     const firstTime = keyframes[0].time;
     const lastTime = keyframes[keyframes.length - 1].time;
-    const streamInterval = beatDuration / 4;
+    const streamIntervalMicros = Math.round((beatDuration / 4) * 1000);
+    const firstTimeMicros = Math.round(firstTime * 1000);
+    const noteCount = Math.floor((lastTime - firstTime) / (beatDuration / 4)) + 1;
 
     let currentKeyframeIdx = 0;
 
-    for (let t = firstTime; t <= lastTime; t += streamInterval) {
+    for (let i = 0; i < noteCount; i++) {
+        const tMicros = firstTimeMicros + i * streamIntervalMicros;
+        const t = tMicros / 1000;
         while (
             currentKeyframeIdx < keyframes.length - 1 &&
             keyframes[currentKeyframeIdx + 1].time < t
@@ -99,7 +103,7 @@ export async function parseOsuFile(text) {
         }
 
         notes.push({
-            time: t / 1000, // convert ms to seconds
+            time: tMicros / 1000000, // convert microseconds to seconds
             hit: false,
             missed: false,
             x,
