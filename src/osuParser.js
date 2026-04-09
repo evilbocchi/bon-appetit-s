@@ -68,9 +68,10 @@ export async function parseOsuFile(text) {
 
     const firstTime = keyframes[0].time;
     const lastTime = keyframes[keyframes.length - 1].time;
-    const streamIntervalMicros = Math.round((beatDuration / 4) * 1000);
+    const streamInterval = beatDuration / 4;
+    const streamIntervalMicros = Math.round(streamInterval * 1000);
     const firstTimeMicros = Math.round(firstTime * 1000);
-    const noteCount = Math.floor((lastTime - firstTime) / (beatDuration / 4)) + 1;
+    const noteCount = Math.floor((lastTime - firstTime) / streamInterval) + 1;
 
     let currentKeyframeIdx = 0;
 
